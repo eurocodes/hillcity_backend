@@ -1,0 +1,29 @@
+{
+  "name": "hillcity-backend",
+  "version": "1.0.0",
+  "description": "The hillcity mentorship app is a mobile version of hillcity online module. This repo contains the backend project",
+  "main": "server.js",
+  "scripts": {
+    "start": "node src/usingDB/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eurocodes/hillcity_backend.git"
+  },
+  "author": "Ugochukwu Umeoke (eurocodes)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eurocodes/hillcity_backend/issues"
+  },
+  "homepage": "https://github.com/eurocodes/hillcity_backend#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "express-handlebars": "^4.0.4",
+    "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
