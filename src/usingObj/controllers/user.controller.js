@@ -1,20 +1,37 @@
-const database = require("../../usingDB/connection")
+const database = require("../../usingDB/connection");
+const Helper = require("../middlwares/Helper");
 
 class UserCntrl {
 
-    getUser(req, res) {
-        const queryText = `SELECT * from creat_an_account where email_address like "%umeoke@gmail.com%"`;
-        const users = database.query(queryText, (error, rows) => {
-            if (!error) {
-                return res.status(200).send({
-                    status: "success",
-                    data: rows,
-                })
-            } else {
+    // Login Methoth
+    login(req, res) {
+        if (!req.body.email || !req.body.password) {
+            return res.status(400).send({ message: "Some values are missing" })
+        }
+        const queryText = 'SELECT * FROM creat_an_account WHERE Email_Address = ?';
+        database.query(queryText, [req.body.email], (error, results) => {
+            if (error) {
                 console.log(error);
+            } else if (!results[0]) {
+                return res.status(404).send({ message: "Your data cannot be found on our database" })
             }
+            if (!Helper.comparePassword(results[0].atnatimrun, req.body.password)) {
+                return res.status(401).send({ message: "The credentials you provided is incorrect" })
+            }
+            const userId = results[0].Hillcity_Reference_number;
+            const token = Helper.generateToken(userId);
+
+            return res.status(200).send({
+                status: "success",
+                data: {
+                    token,
+                    userId,
+                }
+            })
         })
+
     }
 }
+
 
 module.exports = new UserCntrl;
