@@ -38,7 +38,7 @@ const Helper = {
         const token = jwt.sign({
             Hillcity_Reference_number: id,
         },
-            "$jsonwebtokenPrivateKey$%@@", { expiresIn: '7d' });
+            process.env.SECRET, { expiresIn: '7d' });
         return token;
     },
 }
