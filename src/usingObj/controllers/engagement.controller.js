@@ -13,7 +13,7 @@ const Engagement = {
         const status = "Pending";
         const any = "";
         let score = 0;
-        const { modeOfEngagement, proposedDate, proposedTime, engagementType, reasonForEngagemrnt } = req.body;
+        const { modeOfEngagement, proposedDate, proposedTime, engagementType, reasonForEngagement } = req.body;
         const dateSubmitted = DateTime.generateDateTime();
         const queryText = `INSERT INTO engagement SET engagement_ID = ?, submitted_by = ?, month_submitted = ?, year_submitted = ?,
             mentors_id = ?, status = ?, mode_of_engagement = ?, proposed_date = ?, proposed_time = ?, is_report_up = ?,
@@ -23,7 +23,7 @@ const Engagement = {
             Mentor_Closure_Comment = ?, Closure_date = ?, Total_Engagement_score = ?`;
         const values = [engagementId, submittedBy, month, year, mentorId, status, modeOfEngagement, proposedDate,
             proposedTime, any, any, any, any, any, dateSubmitted, any, any, any, any, any,
-            any, num, year, engagementType, reasonForEngagemrnt, any, any, score];
+            any, num, year, engagementType, reasonForEngagement, any, any, score];
         database.query(queryText, values, (error, results) => {
             console.log("EngID:", engagementId);
             if (!error) {
@@ -107,7 +107,8 @@ const Engagement = {
                     if (!error) {
                         return res.status(200).send({ rows });
                     } else {
-                        res.status(403).send({ error });
+                        console.log(error);
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
                     }
                 })
             } else {
@@ -136,7 +137,39 @@ const Engagement = {
                     if (!error) {
                         return res.status(200).send({ rows });
                     } else {
-                        res.status(403).send({ error });
+                        console.log(error);
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
+                    }
+                })
+            } else {
+                return res.status(401).send({ message: "You do not have permission to view this item" })
+            }
+        })
+    },
+
+    assignTask(req, res) {
+        const status = "Task Assigned";
+        const dateTime = DateTime.generateDateTime()
+        const { engagementTask, taskType } = req.body;
+        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const updateQuery = `UPDATE engagement SET status = ?, engagement_task = ?, task_type = ?, date_task_assigned = ?`;
+        database.query(findQuery, [req.params.id], (error, results) => {
+            if (!results[0]) {
+                return res.status(404).send({ message: "Item cannot be found" })
+            } else if (req.user.id === results[0].mentors_id) {
+                const values = [
+                    status,
+                    engagementTask,
+                    taskType,
+                    dateTime,
+                ];
+                database.query(updateQuery, values, (error, rows) => {
+                    console.log("Val", values);
+                    if (!error) {
+                        return res.status(200).send({ rows });
+                    } else {
+                        console.log(error);
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
                     }
                 })
             } else {

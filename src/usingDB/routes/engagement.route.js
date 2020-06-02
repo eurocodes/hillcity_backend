@@ -8,6 +8,7 @@ Router.get("/mentee/engagements", EngagementCntrl.getMyEngagementAwardee);
 Router.get("/mentor/engagements", EngagementCntrl.getMyEngagementMentor);
 Router.get("/engagements/:id", EngagementCntrl.getOneEngagement);
 Router.put("/accepted/engagements/:id", EngagementCntrl.acceptEngagement);
+Router.put("/task-assigned/engagements/:id", EngagementCntrl.assignTask);
 Router.put("/rejected/engagements/:id", EngagementCntrl.rejectEngagement);
 
 module.exports = Router;
