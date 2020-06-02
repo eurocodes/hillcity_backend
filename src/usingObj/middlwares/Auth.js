@@ -21,7 +21,10 @@ const Auth = {
                 if (!rows[0]) {
                     return res.status(401).send({ message: 'Not permitted' });
                 }
-                req.user = { id: decoded.Hillcity_Reference_number };
+                req.user = {
+                    id: decoded.Hillcity_Reference_number,
+                    m_id: rows[0].MentorID,
+                };
                 next();
             });
         } catch (error) {
