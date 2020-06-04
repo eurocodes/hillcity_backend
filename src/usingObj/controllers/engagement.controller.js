@@ -1,13 +1,13 @@
 const database = require("../../usingDB/connection");
 const DateTime = require("../middlwares/DateTime");
+const ID = require("../middlwares/ID.gen");
 
 const Engagement = {
     async createEngagement(req, res) {
-        const month = new Date().toDateString().split(" ")[1];
-        const year = new Date().toDateString().split(" ")[3];
+        const month = DateTime.generateDateTime().split(" ")[1];
+        const year = DateTime.generateDateTime().split(" ")[3];
         const num = Math.floor(Math.random() * 30);
-        const num1 = Math.floor(Math.random() * num);
-        const engagementId = `EN-${num1}EDJ.${num}.${month}`;
+        const engagementId = ID.generateID();
         const submittedBy = req.user.id;
         const mentorId = req.user.m_id;
         const status = "Pending";
@@ -25,14 +25,12 @@ const Engagement = {
             proposedTime, any, any, any, any, any, dateSubmitted, any, any, any, any, any,
             any, num, year, engagementType, reasonForEngagement, any, any, score];
         database.query(queryText, values, (error, results) => {
-            console.log("EngID:", engagementId);
             if (!error) {
                 return res.status(201).send({
                     status: "successfully created new engagement",
                     data: results,
                 })
             } else {
-                console.log(error);
                 return res.status(400).send({ message: "Oops!, something went wrong" })
             }
         })
@@ -100,10 +98,9 @@ const Engagement = {
                 const values = [
                     status,
                     DateTime.generateDateTime(),
-                    comment,
+                    comment || results[0].mentor_reject_comment,
                 ];
                 database.query(updateQuery, values, (error, rows) => {
-                    console.log("Val", values);
                     if (!error) {
                         return res.status(200).send({ rows });
                     } else {
@@ -130,10 +127,9 @@ const Engagement = {
                 const values = [
                     status,
                     DateTime.generateDateTime(),
-                    comment,
+                    comment || results[0].mentor_reject_comment,
                 ];
                 database.query(updateQuery, values, (error, rows) => {
-                    console.log("Val", values);
                     if (!error) {
                         return res.status(200).send({ rows });
                     } else {
@@ -164,11 +160,9 @@ const Engagement = {
                     dateTime,
                 ];
                 database.query(updateQuery, values, (error, rows) => {
-                    console.log("Val", values);
                     if (!error) {
                         return res.status(200).send({ rows });
                     } else {
-                        console.log(error);
                         return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
                     }
                 })

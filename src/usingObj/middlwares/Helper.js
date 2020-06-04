@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const md5 = require("md5")
 
 const Helper = {
     /**
@@ -25,8 +26,8 @@ const Helper = {
      * @param {string} password
      * @returns {Boolean} returns true or false
      */
-    comparePassword(getPassword, password) {
-        return password === getPassword;
+    comparePassword(comPassword, password) {
+        return md5(password) === comPassword;
     },
 
     /**
