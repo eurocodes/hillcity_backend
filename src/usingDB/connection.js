@@ -10,7 +10,7 @@ database.connect(err => {
     if (!err) {
         console.log("Establshed connection with database")
     } else {
-        console.log("Failed to connect to database")
+        console.log("Failed to connect to database", err.message)
     }
 })
 

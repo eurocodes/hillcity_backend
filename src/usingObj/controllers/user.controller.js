@@ -15,7 +15,7 @@ class UserCntrl {
             } else if (!results[0]) {
                 return res.status(404).send({ message: "Your data cannot be found on our database" })
             }
-            if (!Helper.comparePassword(results[0].atnatimrun, req.body.password)) {
+            if (!Helper.comparePassword(results[0].Password, req.body.password)) {
                 return res.status(401).send({ message: "The credentials you provided is incorrect" })
             }
             const userId = results[0].Hillcity_Reference_number;
