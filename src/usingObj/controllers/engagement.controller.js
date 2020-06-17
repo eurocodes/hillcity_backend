@@ -51,7 +51,7 @@ const Engagement = {
     },
 
     getMyEngagementMentor(req, res) {
-        const queryText = `select ca.First_Name, ca.Last_Name, ca.Email_Address, en.status,
+        const queryText = `select ca.First_Name, ca.Last_Name, ca.Email_Address, ca.photo, en.engagement_ID, en.status,
         en.date_submitted, en.report_attached, en.mode_of_engagement, en.proposed_date, en.proposed_time,
         en.report_uploaded, en.engagement_task, en.date_task_assigned, en.task_type, en.engagement_type,
         en.reason_for_engagement from creat_an_account ca inner join engagement en

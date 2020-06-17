@@ -20,12 +20,16 @@ class UserCntrl {
             }
             const userId = results[0].Hillcity_Reference_number;
             const token = Helper.generateToken(userId);
+            const role = results[0].accesslv2;
+            const name = `${results[0].First_Name} ${results[0].Last_Name}`;
 
             return res.status(200).send({
                 status: "success",
                 data: {
                     token,
                     userId,
+                    name,
+                    role,
                 }
             })
         })
