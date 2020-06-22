@@ -51,7 +51,7 @@ const Engagement = {
     },
 
     getMyEngagementMentor(req, res) {
-        const queryText = `select ca.First_Name, ca.Last_Name, ca.Email_Address, en.status,
+        const queryText = `select ca.First_Name, ca.Last_Name, ca.Email_Address, ca.photo, en.engagement_ID, en.status,
         en.date_submitted, en.report_attached, en.mode_of_engagement, en.proposed_date, en.proposed_time,
         en.report_uploaded, en.engagement_task, en.date_task_assigned, en.task_type, en.engagement_type,
         en.reason_for_engagement from creat_an_account ca inner join engagement en
@@ -90,7 +90,7 @@ const Engagement = {
         const { comment } = req.body;
         const findQuery = `SELECT * from engagement where engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET status = ?, Mentors_Accept_rejected_date = ?,
-        mentor_reject_comment = ?`;
+        mentor_reject_comment = ? where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
             if (!results[0]) {
                 return res.status(404).send({ message: "Item cannot be found" })
@@ -99,6 +99,7 @@ const Engagement = {
                     status,
                     DateTime.generateDateTime(),
                     comment || results[0].mentor_reject_comment,
+                    req.params.id,
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
@@ -119,7 +120,7 @@ const Engagement = {
         const { comment } = req.body;
         const findQuery = `SELECT * from engagement where engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET status = ?, Mentors_Accept_rejected_date = ?,
-        mentor_reject_comment = ?`;
+        mentor_reject_comment = ? where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
             if (!results[0]) {
                 return res.status(404).send({ message: "Item cannot be found" })
@@ -128,6 +129,7 @@ const Engagement = {
                     status,
                     DateTime.generateDateTime(),
                     comment || results[0].mentor_reject_comment,
+                    req.params.id
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
@@ -148,7 +150,8 @@ const Engagement = {
         const dateTime = DateTime.generateDateTime()
         const { engagementTask, taskType } = req.body;
         const findQuery = `SELECT * from engagement where engagement_ID = ?`;
-        const updateQuery = `UPDATE engagement SET status = ?, engagement_task = ?, task_type = ?, date_task_assigned = ?`;
+        const updateQuery = `UPDATE engagement SET status = ?, engagement_task = ?, task_type = ?, date_task_assigned = ?
+        where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
             if (!results[0]) {
                 return res.status(404).send({ message: "Item cannot be found" })
@@ -158,6 +161,45 @@ const Engagement = {
                     engagementTask,
                     taskType,
                     dateTime,
+                    req.params.id
+                ];
+                database.query(updateQuery, values, (error, rows) => {
+                    if (!error) {
+                        return res.status(200).send({ rows });
+                    } else {
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
+                    }
+                })
+            } else {
+                return res.status(401).send({ message: "You do not have permission to view this item" })
+            }
+        })
+    },
+
+    uploadReport(req, res) {
+        const isReportUp = "Yes";
+        const reportAttached = "report attached"
+        const dateTime = DateTime.generateDateTime()
+        console.log("Request File:", req.file);
+        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const updateQuery = `UPDATE engagement SET is_report_up = ?, report_attached = ?, report_date_submitted = ?, report_uploaded = ?
+        where engagement_ID = ?`;
+        database.query(findQuery, [req.params.id], (error, results) => {
+            if (!results[0]) {
+                return res.status(404).send({ message: "Item cannot be found" })
+            } else if (!req.file) {
+                return res.status(400).send({ message: "File is required" })
+            } else if (req.user.id === results[0].submitted_by) {
+                const url = req.protocol + "://" + req.get("host");
+                const fileUrl = url + "/uploads/" + req.file.filename;
+                console.log("File Url::::::", fileUrl);
+                const values = [
+                    isReportUp,
+                    reportAttached,
+                    dateTime,
+                    fileUrl,
+                    req.params.id,
+
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
