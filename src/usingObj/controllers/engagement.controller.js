@@ -37,7 +37,7 @@ const Engagement = {
     },
 
     getMyEngagementAwardee(req, res) {
-        const queryText = `SELECT * FROM engagement where submitted_by = ?`;
+        const queryText = `SELECT * FROM engagement where submitted_by = ? order by date_submitted desc`;
         database.query(queryText, [req.user.id], (error, results) => {
             if (!error) {
                 return res.status(200).send({
@@ -56,7 +56,7 @@ const Engagement = {
         en.report_uploaded, en.engagement_task, en.date_task_assigned, en.task_type, en.engagement_type,
         en.reason_for_engagement from creat_an_account ca inner join engagement en
         on ca.Hillcity_Reference_number = en.submitted_by
-        where en.mentors_id = ?`;
+        where en.mentors_id = ? order by en.date_submitted desc`;
         database.query(queryText, [req.user.id], (error, results) => {
             if (!error) {
                 return res.status(200).send({
@@ -210,6 +210,31 @@ const Engagement = {
                 })
             } else {
                 return res.status(401).send({ message: "You do not have permission to view this item" })
+            }
+        })
+    },
+
+    getAllEngagements(req, res) {
+        const query = 'SELECT * from creat_an_account ca where ca.Hillcity_Reference_number = ?';
+        const engDetailsQuery = `SELECT en.engagement_ID, ca.First_Name, ca.Last_Name, ca.Email_Address, en.status, en.date_submitted, en.report_attached,
+        en.mode_of_engagement, en.proposed_date, en.proposed_time, en.report_uploaded, en.engagement_task, en.date_task_assigned,
+        en.task_type, en.engagement_type, en.reason_for_engagement, cm.First_Name as "Mentor FirstName", 
+        cm.Last_Name as "Mentor LastName", cm.Email_Address as "Mentor Email" FROM creat_an_account ca 
+        inner join engagement en on ca.Hillcity_Reference_number = en.submitted_by
+        inner join creat_an_account cm on en.mentors_id = cm.Hillcity_Reference_number order by en.date_submitted desc;`
+        database.query(query, [req.user.id], (error, results) => {
+            if (error) {
+                return res.status(400).send({ message: "Error occured" })
+            } else if (results[0].accesslv2 === "adminmember") {
+                database.query(engDetailsQuery, (error, rows) => {
+                    if (!error) {
+                        return res.status(200).send({ rows });
+                    } else {
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
+                    }
+                })
+            } else {
+                return res.status(401).send({ message: "Access denied" })
             }
         })
     }

@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const path = require('path');
 
 const Auth = require("./usingObj/middlwares/Auth");
 const EngagementRoute = require("./usingDB/routes/engagement.route");
@@ -14,10 +15,11 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use("/api/v1/auth", UserRoute);
+app.use("/api/v1/admin", Auth.verifyToken, UserRoute)
 app.use("/api/v1/auth", Auth.verifyToken, PageRoute);
 app.use("/api/v1/post", Auth.verifyToken, EngagementRoute)
 app.use("/api/v1/get", Auth.verifyToken, EngagementRoute);
-app.use("/", EngagementRoute);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/v1/update", Auth.verifyToken, EngagementRoute);
 
 module.exports = app;
