@@ -13,5 +13,6 @@ Router.put("/task-assigned/engagements/:id", EngagementCntrl.assignTask);
 Router.put("/rejected/engagements/:id", EngagementCntrl.rejectEngagement);
 Router.put("/report/engagements/:id", multer, EngagementCntrl.uploadReport);
 Router.get("/admin/engagements", EngagementCntrl.getAllEngagements);
+Router.get("/admin/mentors/engagements/all", EngagementCntrl.getAllMentorsAndEngagements);
 
 module.exports = Router;
