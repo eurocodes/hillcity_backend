@@ -237,6 +237,30 @@ const Engagement = {
                 return res.status(401).send({ message: "Access denied" })
             }
         })
+    },
+
+    getAllMentorsAndEngagements(req, res) {
+        const query = 'SELECT * from creat_an_account ca where ca.Hillcity_Reference_number = ?';
+        const engDetailsQuery = `SELECT cm.Hillcity_Reference_number, cm.Email_Address, cm.First_Name, cm.Last_Name, en.status,
+        en.report_uploaded, ca.Email_Address as "Mentee Email", ca.First_Name as "Mentee FirstName",
+        ca.Last_Name as "Mentee LastName" from creat_an_account cm inner join engagement en
+        on cm.Hillcity_Reference_number = en.mentors_id inner join creat_an_account ca
+        on cm.Hillcity_Reference_number = ca.MentorID order by cm.Email_Address`;
+        database.query(query, [req.user.id], (error, results) => {
+            if (error) {
+                return res.status(400).send({ message: "Error occured" })
+            } else if (results[0].accesslv2 === "adminmember") {
+                database.query(engDetailsQuery, (error, rows) => {
+                    if (!error) {
+                        return res.status(200).send({ rows });
+                    } else {
+                        return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
+                    }
+                })
+            } else {
+                return res.status(401).send({ message: "Access denied" })
+            }
+        })
     }
 }
 
