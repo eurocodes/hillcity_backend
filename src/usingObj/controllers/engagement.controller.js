@@ -1,6 +1,7 @@
 const database = require("../../usingDB/connection");
 const DateTime = require("../middlwares/DateTime");
 const ID = require("../middlwares/ID.gen");
+const nodeMailer = require("../middlwares/NodeMailer");
 
 const Engagement = {
     async createEngagement(req, res) {
@@ -15,6 +16,8 @@ const Engagement = {
         let score = 0;
         const { modeOfEngagement, proposedDate, proposedTime, engagementType, reasonForEngagement } = req.body;
         const dateSubmitted = DateTime.generateDateTime();
+        const findQuery = `SELECT cm.First_Name as "firstName", cm.Last_Name as "lastName", cm.Email_Address as "email"
+        from creat_an_account cm inner join creat_an_account ca on ca.MentorID = cm.Hillcity_Reference_number where ca.Hillcity_Reference_number = ?`;
         const queryText = `INSERT INTO engagement SET engagement_ID = ?, submitted_by = ?, month_submitted = ?, year_submitted = ?,
             mentors_id = ?, status = ?, mode_of_engagement = ?, proposed_date = ?, proposed_time = ?, is_report_up = ?,
             engagement_task_achieved = ?, engagement_communicate = ?, engagement_completed_done = ?, engagement_report_reflect = ?,
@@ -24,14 +27,40 @@ const Engagement = {
         const values = [engagementId, submittedBy, month, year, mentorId, status, modeOfEngagement, proposedDate,
             proposedTime, any, any, any, any, any, dateSubmitted, any, any, any, any, any,
             any, num, year, engagementType, reasonForEngagement, any, any, score];
-        database.query(queryText, values, (error, results) => {
-            if (!error) {
-                return res.status(201).send({
-                    status: "successfully created new engagement",
-                    data: results,
+        database.query(findQuery, [req.user.id], (error, rows) => {
+            if (error) {
+                console.log("Error here:::", error)
+                return res.status(400).send({ message: "Error occured" })
+            } else if (rows[0]) {
+                database.query(queryText, values, (error, results) => {
+                    if (!error) {
+                        const message = {
+                            from: "mentorship@hillcityfoundation.org",
+                            to: rows[0].email,
+                            subject: `New Engagement Created by | ${req.user.name}`,
+                            html: `<h2>Dear ${rows[0].firstName} ${rows[0].lastName}</h2>
+                            <p>Your mentee ${req.user.name} has created a new engagement <b>${engagementId}</b>. The status has been updated to ${status}.</p>
+                            <h3><b>Type of engagement: </b>${engagementType}</h3>
+                            <h3><b>Reason for engagement: </b>${reasonForEngagement}</h3>
+                            <p>This is a test, please ignore if you recieve this email by accident and report to Hillcity Admin asap.</p>`,
+                        };
+                        nodeMailer.sendMail(message, (error, info) => {
+                            if (error) {
+                                console.log("Error occured", error)
+                            } else {
+                                console.log("success", info)
+                            }
+                        })
+                        return res.status(201).send({
+                            status: "successfully created new engagement",
+                            data: results,
+                        })
+                    } else {
+                        return res.status(400).send({ message: "Oops!, something went wrong" })
+                    }
                 })
             } else {
-                return res.status(400).send({ message: "Oops!, something went wrong" })
+                res.status(404).send({ message: "an unknown error occured" })
             }
         })
     },
@@ -88,7 +117,9 @@ const Engagement = {
     acceptEngagement(req, res) {
         const status = "Accepted";
         const { comment } = req.body;
-        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const findQuery = `SELECT ca.First_Name as "firstName", ca.Last_Name as "lastName", ca.Email_Address as "email",
+        en.mentors_id, en.mentor_reject_comment from creat_an_account ca inner join engagement en on
+        en.submitted_by = ca.Hillcity_Reference_number where en.engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET status = ?, Mentors_Accept_rejected_date = ?,
         mentor_reject_comment = ? where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
@@ -103,6 +134,21 @@ const Engagement = {
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
+                        const message = {
+                            from: "mentorship@hillcityfoundation.org",
+                            to: results[0].email,
+                            subject: `Engagement Status Updated | ${status.toUpperCase()}`,
+                            html: `<h2>Dear ${results[0].firstName} ${results[0].lastName}</h2>
+                            <p>Your Engagement <b>${req.params.id}</b> has been updated. Your engagement status is now ${status}.
+                            This is a test, please ignore if you recieve this email by accident and report to Hillcity Admin asap.</p>`,
+                        };
+                        nodeMailer.sendMail(message, (error, info) => {
+                            if (error) {
+                                console.log("Error occured", error)
+                            } else {
+                                console.log("success", info)
+                            }
+                        })
                         return res.status(200).send({ rows });
                     } else {
                         console.log(error);
@@ -118,7 +164,9 @@ const Engagement = {
     rejectEngagement(req, res) {
         const status = "Rejected";
         const { comment } = req.body;
-        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const findQuery = `SELECT ca.First_Name as "firstName", ca.Last_Name as "lastName", ca.Email_Address as "email",
+        en.mentors_id, en.mentor_reject_comment from creat_an_account ca inner join engagement en on
+        en.submitted_by = ca.Hillcity_Reference_number where en.engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET status = ?, Mentors_Accept_rejected_date = ?,
         mentor_reject_comment = ? where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
@@ -133,6 +181,21 @@ const Engagement = {
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
+                        const message = {
+                            from: "mentorship@hillcityfoundation.org",
+                            to: results[0].email,
+                            subject: `Engagement Status Updated | ${status.toUpperCase()}`,
+                            html: `<h2>Dear ${results[0].firstName} ${results[0].lastName}</h2>
+                            <p>Your Engagement <b>${req.params.id}</b> has been updated. Your engagement status is now ${status}.
+                            This is a test, please ignore if you recieve this email by accident and report to Hillcity Admin asap.</p>`,
+                        };
+                        nodeMailer.sendMail(message, (error, info) => {
+                            if (error) {
+                                console.log("Error occured", error)
+                            } else {
+                                console.log("success", info)
+                            }
+                        })
                         return res.status(200).send({ rows });
                     } else {
                         console.log(error);
@@ -149,7 +212,9 @@ const Engagement = {
         const status = "Task Assigned";
         const dateTime = DateTime.generateDateTime()
         const { engagementTask, taskType } = req.body;
-        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const findQuery = `SELECT ca.First_Name as "firstName", ca.Last_Name as "lastName", ca.Email_Address as "email",
+        en.mentors_id, en.mentor_reject_comment from creat_an_account ca inner join engagement en on
+        en.submitted_by = ca.Hillcity_Reference_number where en.engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET status = ?, engagement_task = ?, task_type = ?, date_task_assigned = ?
         where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
@@ -165,6 +230,21 @@ const Engagement = {
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
+                        const message = {
+                            from: "mentorship@hillcityfoundation.org",
+                            to: results[0].email,
+                            subject: `Engagement Status Updated | ${status.toUpperCase()}`,
+                            html: `<h2>Dear ${results[0].firstName} ${results[0].lastName}</h2>
+                            <p>Your Engagement <b>${req.params.id}</b> has been updated. Your engagement status is now ${status}.
+                            This is a test, please ignore if you recieve this email by accident and report to Hillcity Admin asap.</p>`,
+                        };
+                        nodeMailer.sendMail(message, (error, info) => {
+                            if (error) {
+                                console.log("Error occured", error)
+                            } else {
+                                console.log("success", info)
+                            }
+                        })
                         return res.status(200).send({ rows });
                     } else {
                         return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
@@ -181,7 +261,9 @@ const Engagement = {
         const reportAttached = "report attached"
         const dateTime = DateTime.generateDateTime()
         console.log("Request File:", req.file);
-        const findQuery = `SELECT * from engagement where engagement_ID = ?`;
+        const findQuery = `SELECT cm.First_Name as "firstName", cm.Last_Name as "lastName", cm.Email_Address as "email",
+        en.submitted_by from creat_an_account cm inner join engagement en on
+        en.mentors_id = cm.Hillcity_Reference_number where en.engagement_ID = ?`;
         const updateQuery = `UPDATE engagement SET is_report_up = ?, report_attached = ?, report_date_submitted = ?, report_uploaded = ?
         where engagement_ID = ?`;
         database.query(findQuery, [req.params.id], (error, results) => {
@@ -203,6 +285,21 @@ const Engagement = {
                 ];
                 database.query(updateQuery, values, (error, rows) => {
                     if (!error) {
+                        const message = {
+                            from: "mentorship@hillcityfoundation.org",
+                            to: results[0].email,
+                            subject: `Engagement Status Updated | ${reportAttached.toUpperCase()}`,
+                            html: `<h2>Dear ${results[0].firstName} ${results[0].lastName}</h2>
+                            <p>Your mentee ${req.user.name} has updated the engagement <b>${req.params.id}</b>. New status is ${reportAttached}.
+                            This is a test, please ignore if you recieve this email by accident and report to Hillcity Admin asap.</p>`,
+                        };
+                        nodeMailer.sendMail(message, (error, info) => {
+                            if (error) {
+                                console.log("Error occured", error)
+                            } else {
+                                console.log("success", info)
+                            }
+                        })
                         return res.status(200).send({ rows });
                     } else {
                         return res.status(403).send({ message: "Ooh! Uh!, something went wrong" });
@@ -242,7 +339,7 @@ const Engagement = {
     getAllMentorsAndEngagements(req, res) {
         const query = 'SELECT * from creat_an_account ca where ca.Hillcity_Reference_number = ?';
         const engDetailsQuery = `SELECT cm.Hillcity_Reference_number, cm.Email_Address, cm.First_Name, cm.Last_Name, en.status,
-        en.report_uploaded, ca.Email_Address as "Mentee Email", ca.First_Name as "Mentee FirstName",
+        en.engagement_type, en.reason_for_engagement, en.report_uploaded, ca.Email_Address as "Mentee Email", ca.First_Name as "Mentee FirstName",
         ca.Last_Name as "Mentee LastName" from creat_an_account cm inner join engagement en
         on cm.Hillcity_Reference_number = en.mentors_id inner join creat_an_account ca
         on cm.Hillcity_Reference_number = ca.MentorID order by cm.Email_Address`;

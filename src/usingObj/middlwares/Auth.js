@@ -24,6 +24,8 @@ const Auth = {
                 req.user = {
                     id: decoded.Hillcity_Reference_number,
                     m_id: rows[0].MentorID,
+                    email: rows[0].Email_Address,
+                    name: `${rows[0].First_Name} ${rows[0].Last_Name}`,
                 };
                 next();
             });
