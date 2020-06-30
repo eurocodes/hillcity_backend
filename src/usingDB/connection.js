@@ -4,10 +4,10 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const database = mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "euro@eurocodes1",
-    database: "hillcity_mentorship",
+    host: "us-cdbr-east-02.cleardb.com",
+    user: "bac60cfb94e5ec",
+    password: "dd5ba189",
+    database: "heroku_a04241cf73b03f9",
     multipleStatements: true,
 })
 
