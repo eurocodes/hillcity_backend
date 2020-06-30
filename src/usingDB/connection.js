@@ -8,7 +8,6 @@ const database = mysql.createConnection({
     user: "bac60cfb94e5ec",
     password: "dd5ba189",
     database: "heroku_a04241cf73b03f9",
-    multipleStatements: true,
 })
 
 database.connect(err => {
