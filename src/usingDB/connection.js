@@ -24,6 +24,4 @@ database.query("SELECT 1 + 1 AS solution", (error, results, fields) => {
     console.log("The solution is:", results[0].solution);
 })
 
-database.end()
-
 module.exports = database;
